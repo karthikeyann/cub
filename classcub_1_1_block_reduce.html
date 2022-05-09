@@ -1,4 +1,4 @@
-<!-- HTML header for doxygen 1.8.3.1-->
+<!-- HTML header for doxygen 1.8.4-->
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -219,7 +219,78 @@ Public Methods</h2></td></tr>
 <tr class="memdesc:a33ddffdde07275ab0c4e1bf61b0d9409"><td class="mdescLeft">&#160;</td><td class="mdescRight">Computes a block-wide reduction for thread<sub>0</sub> using addition (+) as the reduction operator. The first <code>num_valid</code> threads each contribute one input element.  <a href="#a33ddffdde07275ab0c4e1bf61b0d9409">More...</a><br/></td></tr>
 <tr class="separator:a33ddffdde07275ab0c4e1bf61b0d9409"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;
+    typename T, 
+    int BLOCK_DIM_X, 
+    BlockReduceAlgorithm ALGORITHM = BLOCK_REDUCE_WARP_REDUCTIONS, 
+    int BLOCK_DIM_Y = 1, 
+    int BLOCK_DIM_Z = 1, 
+    int PTX_ARCH = CUB_PTX_ARCH&gt;<br/>
+class cub::BlockReduce&lt; T, BLOCK_DIM_X, ALGORITHM, BLOCK_DIM_Y, BLOCK_DIM_Z, PTX_ARCH &gt;</h3>
+
+<p>The <a class="el" href="classcub_1_1_block_reduce.html" title="The BlockReduce class provides collective methods for computing a parallel reduction of items partiti...">BlockReduce</a> class provides <a href="index.html#sec0"><em>collective</em></a> methods for computing a parallel reduction of items partitioned across a CUDA thread block. </p>
+<div class="image">
+<img src="reduce_logo.png" alt="reduce_logo.png"/>
+<div class="caption">
+.</div></div>
+ <dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">T</td><td>Data type being reduced </td></tr>
+    <tr><td class="paramname">BLOCK_DIM_X</td><td>The thread block length in threads along the X dimension </td></tr>
+    <tr><td class="paramname">ALGORITHM</td><td><b>[optional]</b> <a class="el" href="namespacecub.html#add0251c713859b8974806079e498d10a">cub::BlockReduceAlgorithm</a> enumerator specifying the underlying algorithm to use (default: <a class="el" href="namespacecub.html#add0251c713859b8974806079e498d10aa993903176f938273fa1ff5d4daa808e5">cub::BLOCK_REDUCE_WARP_REDUCTIONS</a>) </td></tr>
+    <tr><td class="paramname">BLOCK_DIM_Y</td><td><b>[optional]</b> The thread block length in threads along the Y dimension (default: 1) </td></tr>
+    <tr><td class="paramname">BLOCK_DIM_Z</td><td><b>[optional]</b> The thread block length in threads along the Z dimension (default: 1) </td></tr>
+    <tr><td class="paramname">PTX_ARCH</td><td><b>[optional]</b> The PTX compute capability for which to to specialize this collective, formatted as per the <code><b>CUDA_ARCH</b></code> macro (e.g., 350 for sm_35). Useful for determining the collective's storage requirements for a given device from the host. (Default: the value of <code><b>CUDA_ARCH</b></code> during the current compiler pass)</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section user"><dt>Overview</dt><dd><ul>
+<li>A <a href="http://en.wikipedia.org/wiki/Reduce_(higher-order_function)"><em>reduction</em></a> (or <em>fold</em>) uses a binary combining operator to compute a single aggregate from a list of input elements.</li>
+<li>For multi-dimensional blocks, threads are linearly ranked in row-major order.</li>
+<li><a class="el" href="classcub_1_1_block_reduce.html" title="The BlockReduce class provides collective methods for computing a parallel reduction of items partiti...">BlockReduce</a> can be optionally specialized by algorithm to accommodate different latency/throughput workload profiles:<ol type="1">
+<li><b><a class="el" href="namespacecub.html#add0251c713859b8974806079e498d10aa508e99516231cd77f27295b233ca34b9">cub::BLOCK_REDUCE_RAKING_COMMUTATIVE_ONLY</a></b>. An efficient "raking" reduction algorithm that only supports commutative reduction operators. <a class="el" href="namespacecub.html#add0251c713859b8974806079e498d10a">More...</a></li>
+<li><b><a class="el" href="namespacecub.html#add0251c713859b8974806079e498d10aab32651e17a8a42207e74b7ed8d1aa4d2">cub::BLOCK_REDUCE_RAKING</a></b>. An efficient "raking" reduction algorithm that supports commutative and non-commutative reduction operators. <a class="el" href="namespacecub.html#add0251c713859b8974806079e498d10a">More...</a></li>
+<li><b><a class="el" href="namespacecub.html#add0251c713859b8974806079e498d10aa993903176f938273fa1ff5d4daa808e5">cub::BLOCK_REDUCE_WARP_REDUCTIONS</a></b>. A quick "tiled warp-reductions" reduction algorithm that supports commutative and non-commutative reduction operators. <a class="el" href="namespacecub.html#add0251c713859b8974806079e498d10a">More...</a></li>
+</ol>
+</li>
+</ul>
+</dd></dl>
+<dl class="section user"><dt>Performance Considerations</dt><dd><ul>
+<li>Efficiency is increased with increased granularity <code>ITEMS_PER_THREAD</code>. Performance is also typically increased until the additional register pressure or shared memory allocation size causes SM occupancy to fall too low. Consider variants of <a class="el" href="classcub_1_1_block_load.html" title="The BlockLoad class provides collective data movement methods for loading a linear segment of items f...">cub::BlockLoad</a> for efficiently gathering a <a href="index.html#sec4sec3"><em>blocked arrangement</em></a> of elements across threads.</li>
+<li>Very efficient (only one synchronization barrier).</li>
+<li>Incurs zero bank conflicts for most types</li>
+<li>Computation is slightly more efficient (i.e., having lower instruction overhead) for:<ul>
+<li>Summation (<b><em>vs.</em></b> generic reduction)</li>
+<li><code>BLOCK_THREADS</code> is a multiple of the architecture's warp size</li>
+<li>Every thread has a valid input (i.e., full <b><em>vs.</em></b> partial-tiles)</li>
+</ul>
+</li>
+<li>See <a class="el" href="namespacecub.html#add0251c713859b8974806079e498d10a">cub::BlockReduceAlgorithm</a> for performance details regarding algorithmic alternatives</li>
+</ul>
+</dd></dl>
+<dl class="section user"><dt>A Simple Example</dt><dd>Every thread in the block uses the <a class="el" href="classcub_1_1_block_reduce.html" title="The BlockReduce class provides collective methods for computing a parallel reduction of items partiti...">BlockReduce</a> class by first specializing the <a class="el" href="classcub_1_1_block_reduce.html" title="The BlockReduce class provides collective methods for computing a parallel reduction of items partiti...">BlockReduce</a> type, then instantiating an instance with parameters for communication, and finally invoking one or more collective member functions. </dd></dl>
+<dl class="section user"><dt></dt><dd>The code snippet below illustrates a sum reduction of 512 integer items that are partitioned in a <a href="index.html#sec5sec3"><em>blocked arrangement</em></a> across 128 threads where each thread owns 4 consecutive items. </dd></dl>
+<dl class="section user"><dt></dt><dd><div class="fragment"><div class="line"><span class="preprocessor">#include &lt;<a class="code" href="cub_8cuh.html">cub/cub.cuh</a>&gt;</span>   <span class="comment">// or equivalently &lt;cub/block/block_reduce.cuh&gt;</span></div>
+<div class="line"></div>
+<div class="line">__global__ <span class="keywordtype">void</span> ExampleKernel(...)</div>
+<div class="line">{</div>
+<div class="line">    <span class="comment">// Specialize BlockReduce for a 1D block of 128 threads of type int</span></div>
+<div class="line">    <span class="keyword">typedef</span> <a class="code" href="classcub_1_1_block_reduce.html" title="The BlockReduce class provides collective methods for computing a parallel reduction of items partiti...">cub::BlockReduce&lt;int, 128&gt;</a> <a class="code" href="classcub_1_1_block_reduce.html#a253f6c152fbb75e3d5d11bfa49224459" title="Collective constructor using a private static allocation of shared memory as temporary storage...">BlockReduce</a>;</div>
+<div class="line"></div>
+<div class="line">    <span class="comment">// Allocate shared memory for BlockReduce</span></div>
+<div class="line">    __shared__ <span class="keyword">typename</span> BlockReduce::TempStorage temp_storage;</div>
+<div class="line"></div>
+<div class="line">    <span class="comment">// Obtain a segment of consecutive items that are blocked across threads</span></div>
+<div class="line">    <span class="keywordtype">int</span> thread_data[4];</div>
+<div class="line">    ...</div>
+<div class="line"></div>
+<div class="line">    <span class="comment">// Compute the block-wide sum for thread0</span></div>
+<div class="line">    <span class="keywordtype">int</span> aggregate = <a class="code" href="classcub_1_1_block_reduce.html#a253f6c152fbb75e3d5d11bfa49224459" title="Collective constructor using a private static allocation of shared memory as temporary storage...">BlockReduce</a>(temp_storage).Sum(thread_data);</div>
+</div><!-- fragment --></dd></dl>
+<dl class="section user"><dt>Re-using dynamically allocating shared memory</dt><dd>The following example under the examples/block folder illustrates usage of dynamically shared memory with <a class="el" href="classcub_1_1_block_reduce.html" title="The BlockReduce class provides collective methods for computing a parallel reduction of items partiti...">BlockReduce</a> and how to re-purpose the same memory region: <a href="../../examples/block/example_block_reduce_dyn_smem.cu">example_block_reduce_dyn_smem.cu</a> </dd></dl>
+<dl><dt><b>Examples: </b></dt><dd><a class="el" href="example_block_reduce_8cu-example.html#_a0">example_block_reduce.cu</a>.</dd>
+</dl></div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a class="anchor" id="a253f6c152fbb75e3d5d11bfa49224459"></a>
 <div class="memitem">
 <div class="memproto">
@@ -719,7 +790,7 @@ template&lt;typename T , int BLOCK_DIM_X, BlockReduceAlgorithm ALGORITHM = BLOCK
 <li><a class="el" href="block__reduce_8cuh.html">block_reduce.cuh</a></li>
 </ul>
 </div><!-- contents -->
-<!-- HTML footer for doxygen 1.8.3.1-->
+<!-- HTML footer for doxygen 1.8.4-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
 Generated by &#160;<a href="http://www.doxygen.org/index.html">

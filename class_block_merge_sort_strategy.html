@@ -1,4 +1,4 @@
-<!-- HTML header for doxygen 1.8.3.1-->
+<!-- HTML header for doxygen 1.8.4-->
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -204,7 +204,56 @@ unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hr
 <tr class="memdesc:ae84c08b728c79e690a90ff6e83f249fc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sorts items partitioned across a CUDA thread block using a merge sorting method.  <a href="#ae84c08b728c79e690a90ff6e83f249fc">More...</a><br/></td></tr>
 <tr class="separator:ae84c08b728c79e690a90ff6e83f249fc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;
+    typename KeyT, 
+    typename ValueT, 
+    int NUM_THREADS, 
+    int ITEMS_PER_THREAD, 
+    typename SynchronizationPolicy&gt;<br/>
+class BlockMergeSortStrategy&lt; KeyT, ValueT, NUM_THREADS, ITEMS_PER_THREAD, SynchronizationPolicy &gt;</h3>
+
+<p>Generalized merge sort algorithm. </p>
+<p>This class is used to reduce code duplication. Warp and Block merge sort differ only in how they compute thread index and how they synchronize threads. Since synchronization might require access to custom data (like member mask), CRTP is used.</p>
+<dl class="section user"><dt></dt><dd>The code snippet below illustrates the way this class can be used. </dd></dl>
+<dl class="section user"><dt></dt><dd><div class="fragment"><div class="line"><span class="preprocessor">#include &lt;<a class="code" href="cub_8cuh.html">cub/cub.cuh</a>&gt;</span> <span class="comment">// or equivalently &lt;cub/block/block_merge_sort.cuh&gt;</span></div>
+<div class="line"></div>
+<div class="line">constexpr <span class="keywordtype">int</span> BLOCK_THREADS = 256;</div>
+<div class="line">constexpr <span class="keywordtype">int</span> ITEMS_PER_THREAD = 9;</div>
+<div class="line"></div>
+<div class="line"><span class="keyword">class </span>BlockMergeSort : <span class="keyword">public</span> <a class="code" href="class_block_merge_sort_strategy.html" title="Generalized merge sort algorithm. ">BlockMergeSortStrategy</a>&lt;int,</div>
+<div class="line">                                                     cub::NullType,</div>
+<div class="line">                                                     BLOCK_THREADS,</div>
+<div class="line">                                                     ITEMS_PER_THREAD,</div>
+<div class="line">                                                     BlockMergeSort&gt;</div>
+<div class="line">{</div>
+<div class="line">  <span class="keyword">using</span> BlockMergeSortStrategyT =</div>
+<div class="line">    <a class="code" href="class_block_merge_sort_strategy.html" title="Generalized merge sort algorithm. ">BlockMergeSortStrategy</a>&lt;int,</div>
+<div class="line">                           cub::NullType,</div>
+<div class="line">                           BLOCK_THREADS,</div>
+<div class="line">                           ITEMS_PER_THREAD,</div>
+<div class="line">                           BlockMergeSort&gt;;</div>
+<div class="line"><span class="keyword">public</span>:</div>
+<div class="line">  __device__ __forceinline__ <span class="keyword">explicit</span> BlockMergeSort(</div>
+<div class="line">    <span class="keyword">typename</span> BlockMergeSortStrategyT::TempStorage &amp;temp_storage)</div>
+<div class="line">      : BlockMergeSortStrategyT(temp_storage, threadIdx.x)</div>
+<div class="line">  {}</div>
+<div class="line"></div>
+<div class="line">  __device__ __forceinline__ <span class="keywordtype">void</span> SyncImplementation()<span class="keyword"> const</span></div>
+<div class="line"><span class="keyword">  </span>{</div>
+<div class="line">    __syncthreads();</div>
+<div class="line">  }</div>
+<div class="line">};</div>
+</div><!-- fragment --></dd></dl>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">KeyT</td><td>KeyT type</td></tr>
+    <tr><td class="paramname">ValueT</td><td>ValueT type. cub::NullType indicates a keys-only sort</td></tr>
+    <tr><td class="paramname">SynchronizationPolicy</td><td>Provides a way of synchronizing threads. Should be derived from <code><a class="el" href="class_block_merge_sort_strategy.html" title="Generalized merge sort algorithm. ">BlockMergeSortStrategy</a></code>. </td></tr>
+  </table>
+  </dd>
+</dl>
+</div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a class="anchor" id="a8ef8a7a07e5af8997d155d60f976fad4"></a>
 <div class="memitem">
 <div class="memproto">
@@ -856,7 +905,7 @@ template&lt;typename CompareOp , bool IS_LAST_TILE = true&gt; </div>
 <li><a class="el" href="block__merge__sort_8cuh.html">block_merge_sort.cuh</a></li>
 </ul>
 </div><!-- contents -->
-<!-- HTML footer for doxygen 1.8.3.1-->
+<!-- HTML footer for doxygen 1.8.4-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
 Generated by &#160;<a href="http://www.doxygen.org/index.html">

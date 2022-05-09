@@ -1,4 +1,4 @@
-<!-- HTML header for doxygen 1.8.3.1-->
+<!-- HTML header for doxygen 1.8.4-->
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -249,7 +249,52 @@ Friends</h2></td></tr>
 <tr class="memdesc:a1eb641f4c024c64bdababa0402af83b3"><td class="mdescLeft">&#160;</td><td class="mdescRight">ostream operator  <a href="#a1eb641f4c024c64bdababa0402af83b3">More...</a><br/></td></tr>
 <tr class="separator:a1eb641f4c024c64bdababa0402af83b3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Member Typedef Documentation</h2>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;
+    typename InputIteratorT, 
+    typename OffsetT = ptrdiff_t, 
+    typename OutputValueT = cub::detail::value_t&lt;InputIteratorT&gt;&gt;<br/>
+class cub::ArgIndexInputIterator&lt; InputIteratorT, OffsetT, OutputValueT &gt;</h3>
+
+<p>A random-access input wrapper for pairing dereferenced values with their corresponding indices (forming <code>KeyValuePair</code> tuples). </p>
+<dl class="section user"><dt>Overview</dt><dd><ul>
+<li>ArgIndexInputIteratorTwraps a random access input iterator <code>itr</code> of type <code>InputIteratorT</code>. Dereferencing an ArgIndexInputIteratorTat offset <code>i</code> produces a <code>KeyValuePair</code> value whose <code>key</code> field is <code>i</code> and whose <code>value</code> field is <code>itr[i]</code>.</li>
+<li>Can be used with any data type.</li>
+<li>Can be constructed, manipulated, and exchanged within and between host and device functions. Wrapped host memory can only be dereferenced on the host, and wrapped device memory can only be dereferenced on the device.</li>
+<li>Compatible with Thrust API v1.7 or newer.</li>
+</ul>
+</dd></dl>
+<dl class="section user"><dt>Snippet</dt><dd>The code snippet below illustrates the use of <code>ArgIndexInputIteratorTto</code> dereference an array of doubles </dd></dl>
+<dl class="section user"><dt></dt><dd><div class="fragment"><div class="line"><span class="preprocessor">#include &lt;<a class="code" href="cub_8cuh.html">cub/cub.cuh</a>&gt;</span>   <span class="comment">// or equivalently &lt;cub/iterator/arg_index_input_iterator.cuh&gt;</span></div>
+<div class="line"></div>
+<div class="line"><span class="comment">// Declare, allocate, and initialize a device array</span></div>
+<div class="line"><span class="keywordtype">double</span> *d_in;         <span class="comment">// e.g., [8.0, 6.0, 7.0, 5.0, 3.0, 0.0, 9.0]</span></div>
+<div class="line"></div>
+<div class="line"><span class="comment">// Create an iterator wrapper</span></div>
+<div class="line"><a class="code" href="classcub_1_1_arg_index_input_iterator.html" title="A random-access input wrapper for pairing dereferenced values with their corresponding indices (formi...">cub::ArgIndexInputIterator&lt;double*&gt;</a> itr(d_in);</div>
+<div class="line"></div>
+<div class="line"><span class="comment">// Within device code:</span></div>
+<div class="line"><span class="keyword">typedef</span> <span class="keyword">typename</span> <a class="code" href="classcub_1_1_arg_index_input_iterator.html#a3b33cc7beaa51ae4f5c236842c5abf94" title="The type of the element the iterator can point to. ">cub::ArgIndexInputIterator&lt;double*&gt;::value_type</a> Tuple;</div>
+<div class="line">Tuple item_offset_pair.key = *itr;</div>
+<div class="line">printf(<span class="stringliteral">&quot;%f @ %d\n&quot;</span>,</div>
+<div class="line">  item_offset_pair.value,</div>
+<div class="line">  item_offset_pair.key);   <span class="comment">// 8.0 @ 0</span></div>
+<div class="line"></div>
+<div class="line">itr = itr + 6;</div>
+<div class="line">item_offset_pair.key = *itr;</div>
+<div class="line">printf(<span class="stringliteral">&quot;%f @ %d\n&quot;</span>,</div>
+<div class="line">  item_offset_pair.value,</div>
+<div class="line">  item_offset_pair.key);   <span class="comment">// 9.0 @ 6</span></div>
+</div><!-- fragment --></dd></dl>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">InputIteratorT</td><td>The value type of the wrapped input iterator </td></tr>
+    <tr><td class="paramname">OffsetT</td><td>The difference type of this iterator (Default: <code>ptrdiff_t</code>) </td></tr>
+    <tr><td class="paramname">OutputValueT</td><td>The paired value type of the &lt;offset,value&gt; tuple (Default: value type of input iterator) </td></tr>
+  </table>
+  </dd>
+</dl>
+</div><h2 class="groupheader">Member Typedef Documentation</h2>
 <a class="anchor" id="a269a675a55e66836cde1d83f842a480e"></a>
 <div class="memitem">
 <div class="memproto">
@@ -806,7 +851,7 @@ template&lt;typename InputIteratorT, typename OffsetT = ptrdiff_t, typename Outp
 <li><a class="el" href="arg__index__input__iterator_8cuh.html">arg_index_input_iterator.cuh</a></li>
 </ul>
 </div><!-- contents -->
-<!-- HTML footer for doxygen 1.8.3.1-->
+<!-- HTML footer for doxygen 1.8.4-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
 Generated by &#160;<a href="http://www.doxygen.org/index.html">

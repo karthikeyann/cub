@@ -1,4 +1,4 @@
-<!-- HTML header for doxygen 1.8.3.1-->
+<!-- HTML header for doxygen 1.8.4-->
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -298,7 +298,81 @@ Public Methods</h2></td></tr>
 <tr class="memdesc:accb292da806e242c851c142c01f638a4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Computes an inclusive block-wide prefix scan using the specified binary <code>scan_op</code> functor. Each thread contributes an array of consecutive input elements. the call-back functor <code>block_prefix_callback_op</code> is invoked by the first warp in the block, and the value returned by <em>lane</em><sub>0</sub> in that warp is used as the "seed" value that logically prefixes the thread block's scan inputs. Also provides every thread with the block-wide <code>block_aggregate</code> of all inputs.  <a href="#accb292da806e242c851c142c01f638a4">More...</a><br/></td></tr>
 <tr class="separator:accb292da806e242c851c142c01f638a4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;
+    typename T, 
+    int BLOCK_DIM_X, 
+    BlockScanAlgorithm ALGORITHM = BLOCK_SCAN_RAKING, 
+    int BLOCK_DIM_Y = 1, 
+    int BLOCK_DIM_Z = 1, 
+    int PTX_ARCH = CUB_PTX_ARCH&gt;<br/>
+class cub::BlockScan&lt; T, BLOCK_DIM_X, ALGORITHM, BLOCK_DIM_Y, BLOCK_DIM_Z, PTX_ARCH &gt;</h3>
+
+<p>The <a class="el" href="classcub_1_1_block_scan.html" title="The BlockScan class provides collective methods for computing a parallel prefix sum/scan of items par...">BlockScan</a> class provides <a href="index.html#sec0"><em>collective</em></a> methods for computing a parallel prefix sum/scan of items partitioned across a CUDA thread block. </p>
+<div class="image">
+<img src="block_scan_logo.png" alt="block_scan_logo.png"/>
+<div class="caption">
+.</div></div>
+ <dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">T</td><td>Data type being scanned </td></tr>
+    <tr><td class="paramname">BLOCK_DIM_X</td><td>The thread block length in threads along the X dimension </td></tr>
+    <tr><td class="paramname">ALGORITHM</td><td><b>[optional]</b> <a class="el" href="namespacecub.html#abec44bba36037c547e7e84906d0d23ab" title="BlockScanAlgorithm enumerates alternative algorithms for cub::BlockScan to compute a parallel prefix ...">cub::BlockScanAlgorithm</a> enumerator specifying the underlying algorithm to use (default: <a class="el" href="namespacecub.html#abec44bba36037c547e7e84906d0d23aba0fa6cac57b7df2f475a67af053b9371c">cub::BLOCK_SCAN_RAKING</a>) </td></tr>
+    <tr><td class="paramname">BLOCK_DIM_Y</td><td><b>[optional]</b> The thread block length in threads along the Y dimension (default: 1) </td></tr>
+    <tr><td class="paramname">BLOCK_DIM_Z</td><td><b>[optional]</b> The thread block length in threads along the Z dimension (default: 1) </td></tr>
+    <tr><td class="paramname">PTX_ARCH</td><td><b>[optional]</b> The PTX compute capability for which to to specialize this collective, formatted as per the <code><b>CUDA_ARCH</b></code> macro (e.g., 350 for sm_35). Useful for determining the collective's storage requirements for a given device from the host. (Default: the value of <code><b>CUDA_ARCH</b></code> during the current compiler pass)</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section user"><dt>Overview</dt><dd><ul>
+<li>Given a list of input elements and a binary reduction operator, a <a href="http://en.wikipedia.org/wiki/Prefix_sum"><em>prefix scan</em></a> produces an output list where each element is computed to be the reduction of the elements occurring earlier in the input list. <em>Prefix sum</em> connotes a prefix scan with the addition operator. The term <em>inclusive</em> indicates that the <em>i</em><sup>th</sup> output reduction incorporates the <em>i</em><sup>th</sup> input. The term <em>exclusive</em> indicates the <em>i</em><sup>th</sup> input is not incorporated into the <em>i</em><sup>th</sup> output reduction.</li>
+<li>For multi-dimensional blocks, threads are linearly ranked in row-major order.</li>
+<li><a class="el" href="classcub_1_1_block_scan.html" title="The BlockScan class provides collective methods for computing a parallel prefix sum/scan of items par...">BlockScan</a> can be optionally specialized by algorithm to accommodate different workload profiles:<ol type="1">
+<li><b><a class="el" href="namespacecub.html#abec44bba36037c547e7e84906d0d23aba0fa6cac57b7df2f475a67af053b9371c">cub::BLOCK_SCAN_RAKING</a></b>. An efficient (high throughput) "raking reduce-then-scan" prefix scan algorithm. <a class="el" href="namespacecub.html#abec44bba36037c547e7e84906d0d23ab">More...</a></li>
+<li><b><a class="el" href="namespacecub.html#abec44bba36037c547e7e84906d0d23abadc8dfe7760ac97ddde467ecf1070674f">cub::BLOCK_SCAN_RAKING_MEMOIZE</a></b>. Similar to <a class="el" href="namespacecub.html#abec44bba36037c547e7e84906d0d23aba0fa6cac57b7df2f475a67af053b9371c">cub::BLOCK_SCAN_RAKING</a>, but having higher throughput at the expense of additional register pressure for intermediate storage. <a class="el" href="namespacecub.html#abec44bba36037c547e7e84906d0d23ab">More...</a></li>
+<li><b><a class="el" href="namespacecub.html#abec44bba36037c547e7e84906d0d23aba7f51e58246eb53f1a97bd1bc8c0f400f">cub::BLOCK_SCAN_WARP_SCANS</a></b>. A quick (low latency) "tiled warpscans" prefix scan algorithm. <a class="el" href="namespacecub.html#abec44bba36037c547e7e84906d0d23ab">More...</a></li>
+</ol>
+</li>
+</ul>
+</dd></dl>
+<dl class="section user"><dt>Performance Considerations</dt><dd><ul>
+<li>Efficiency is increased with increased granularity <code>ITEMS_PER_THREAD</code>. Performance is also typically increased until the additional register pressure or shared memory allocation size causes SM occupancy to fall too low. Consider variants of <a class="el" href="classcub_1_1_block_load.html" title="The BlockLoad class provides collective data movement methods for loading a linear segment of items f...">cub::BlockLoad</a> for efficiently gathering a <a href="index.html#sec4sec3"><em>blocked arrangement</em></a> of elements across threads.</li>
+<li>Uses special instructions when applicable (e.g., warp <code>SHFL</code>)</li>
+<li>Uses synchronization-free communication between warp lanes when applicable</li>
+<li>Invokes a minimal number of minimal block-wide synchronization barriers (only one or two depending on algorithm selection)</li>
+<li>Incurs zero bank conflicts for most types</li>
+<li>Computation is slightly more efficient (i.e., having lower instruction overhead) for:<ul>
+<li>Prefix sum variants (<b><em>vs.</em></b> generic scan)</li>
+<li>The number of threads in the block is a multiple of the architecture's warp size</li>
+</ul>
+</li>
+<li>See <a class="el" href="namespacecub.html#abec44bba36037c547e7e84906d0d23ab" title="BlockScanAlgorithm enumerates alternative algorithms for cub::BlockScan to compute a parallel prefix ...">cub::BlockScanAlgorithm</a> for performance details regarding algorithmic alternatives</li>
+</ul>
+</dd></dl>
+<dl class="section user"><dt>A Simple Example</dt><dd>Every thread in the block uses the <a class="el" href="classcub_1_1_block_scan.html" title="The BlockScan class provides collective methods for computing a parallel prefix sum/scan of items par...">BlockScan</a> class by first specializing the <a class="el" href="classcub_1_1_block_scan.html" title="The BlockScan class provides collective methods for computing a parallel prefix sum/scan of items par...">BlockScan</a> type, then instantiating an instance with parameters for communication, and finally invoking one or more collective member functions. </dd></dl>
+<dl class="section user"><dt></dt><dd>The code snippet below illustrates an exclusive prefix sum of 512 integer items that are partitioned in a <a href="index.html#sec5sec3"><em>blocked arrangement</em></a> across 128 threads where each thread owns 4 consecutive items. </dd></dl>
+<dl class="section user"><dt></dt><dd><div class="fragment"><div class="line"><span class="preprocessor">#include &lt;<a class="code" href="cub_8cuh.html">cub/cub.cuh</a>&gt;</span>   <span class="comment">// or equivalently &lt;cub/block/block_scan.cuh&gt;</span></div>
+<div class="line"></div>
+<div class="line">__global__ <span class="keywordtype">void</span> ExampleKernel(...)</div>
+<div class="line">{</div>
+<div class="line">    <span class="comment">// Specialize BlockScan for a 1D block of 128 threads of type int</span></div>
+<div class="line">    <span class="keyword">typedef</span> <a class="code" href="classcub_1_1_block_scan.html" title="The BlockScan class provides collective methods for computing a parallel prefix sum/scan of items par...">cub::BlockScan&lt;int, 128&gt;</a> <a class="code" href="classcub_1_1_block_scan.html#a5133f76e261ce0b33d381e8be747966c" title="Collective constructor using a private static allocation of shared memory as temporary storage...">BlockScan</a>;</div>
+<div class="line"></div>
+<div class="line">    <span class="comment">// Allocate shared memory for BlockScan</span></div>
+<div class="line">    __shared__ <span class="keyword">typename</span> BlockScan::TempStorage temp_storage;</div>
+<div class="line"></div>
+<div class="line">    <span class="comment">// Obtain a segment of consecutive items that are blocked across threads</span></div>
+<div class="line">    <span class="keywordtype">int</span> thread_data[4];</div>
+<div class="line">    ...</div>
+<div class="line"></div>
+<div class="line">    <span class="comment">// Collectively compute the block-wide exclusive prefix sum</span></div>
+<div class="line">    <a class="code" href="classcub_1_1_block_scan.html#a5133f76e261ce0b33d381e8be747966c" title="Collective constructor using a private static allocation of shared memory as temporary storage...">BlockScan</a>(temp_storage).ExclusiveSum(thread_data, thread_data);</div>
+</div><!-- fragment --> </dd></dl>
+<dl class="section user"><dt></dt><dd>Suppose the set of input <code>thread_data</code> across the block of threads is <code>{[1,1,1,1], [1,1,1,1], ..., [1,1,1,1]}</code>. The corresponding output <code>thread_data</code> in those threads will be <code>{[0,1,2,3], [4,5,6,7], ..., [508,509,510,511]}</code>.</dd></dl>
+<dl class="section user"><dt>Re-using dynamically allocating shared memory</dt><dd>The following example under the examples/block folder illustrates usage of dynamically shared memory with <a class="el" href="classcub_1_1_block_reduce.html" title="The BlockReduce class provides collective methods for computing a parallel reduction of items partiti...">BlockReduce</a> and how to re-purpose the same memory region: <a href="../../examples/block/example_block_reduce_dyn_smem.cu">example_block_reduce_dyn_smem.cu</a></dd></dl>
+<p>This example can be easily adapted to the storage required by <a class="el" href="classcub_1_1_block_scan.html" title="The BlockScan class provides collective methods for computing a parallel prefix sum/scan of items par...">BlockScan</a>. </p>
+<dl><dt><b>Examples: </b></dt><dd><a class="el" href="example_block_scan_8cu-example.html#_a2">example_block_scan.cu</a>.</dd>
+</dl></div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a class="anchor" id="a5133f76e261ce0b33d381e8be747966c"></a>
 <div class="memitem">
 <div class="memproto">
@@ -2749,7 +2823,7 @@ template&lt;int ITEMS_PER_THREAD, typename ScanOp , typename BlockPrefixCallback
 <li><a class="el" href="block__scan_8cuh.html">block_scan.cuh</a></li>
 </ul>
 </div><!-- contents -->
-<!-- HTML footer for doxygen 1.8.3.1-->
+<!-- HTML footer for doxygen 1.8.4-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
 Generated by &#160;<a href="http://www.doxygen.org/index.html">

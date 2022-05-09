@@ -1,4 +1,4 @@
-<!-- HTML header for doxygen 1.8.3.1-->
+<!-- HTML header for doxygen 1.8.4-->
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -231,7 +231,50 @@ cudaError_t&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el
 <tr class="memdesc:afb0c7789ee54719452cb7f2edece3801"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sorts segments of key-value pairs into descending order. Approximately <code>2*num_segments</code> auxiliary storage required.  <a href="#afb0c7789ee54719452cb7f2edece3801">More...</a><br/></td></tr>
 <tr class="separator:afb0c7789ee54719452cb7f2edece3801"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Member Function Documentation</h2>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p><a class="el" href="struct_device_segmented_sort.html" title="DeviceSegmentedSort provides device-wide, parallel operations for computing a batched sort across mul...">DeviceSegmentedSort</a> provides device-wide, parallel operations for computing a batched sort across multiple, non-overlapping sequences of data items residing within device-accessible memory. </p>
+<div class="image">
+<img src="segmented_sorting_logo.png" alt="segmented_sorting_logo.png"/>
+<div class="caption">
+.</div></div>
+ <dl class="section user"><dt>Overview</dt><dd>The algorithm arranges items into ascending (or descending) order. The underlying sorting algorithm is undefined. Depending on the segment size, it might be radix sort, merge sort or something else. Therefore, no assumptions on the underlying implementation should be made.</dd></dl>
+<dl class="section user"><dt>Differences from DeviceSegmentedRadixSort</dt><dd>DeviceSegmentedRadixSort is optimized for significantly large segments (tens of thousands of items and more). Nevertheless, some domains produce a wide range of segment sizes. <a class="el" href="struct_device_segmented_sort.html" title="DeviceSegmentedSort provides device-wide, parallel operations for computing a batched sort across mul...">DeviceSegmentedSort</a> partitions segments into size groups and specialize sorting algorithms for each group. This approach leads to better resource utilization in the presence of segment size imbalance or moderate segment sizes (up to thousands of items). This algorithm is more complex and consists of multiple kernels. This fact leads to longer compilation times as well as larger binaries sizes.</dd></dl>
+<dl class="section user"><dt>Supported Types</dt><dd>The algorithm has to satisfy the underlying algorithms restrictions. Radix sort usage restricts the list of supported types. Therefore, <a class="el" href="struct_device_segmented_sort.html" title="DeviceSegmentedSort provides device-wide, parallel operations for computing a batched sort across mul...">DeviceSegmentedSort</a> can sort all of the built-in C++ numeric primitive types (<code>unsigned char</code>, <code>int</code>, <code>double</code>, etc.) as well as CUDA's <code>__half</code> and <code>__nv_bfloat16</code> 16-bit floating-point types.</dd></dl>
+<dl class="section user"><dt>A simple example</dt><dd><div class="fragment"><div class="line"><span class="preprocessor">#include &lt;<a class="code" href="cub_8cuh.html">cub/cub.cuh</a>&gt;</span></div>
+<div class="line"><span class="comment">// or equivalently &lt;cub/device/device_segmented_sort.cuh&gt;</span></div>
+<div class="line"></div>
+<div class="line"><span class="comment">// Declare, allocate, and initialize device-accessible pointers</span></div>
+<div class="line"><span class="comment">// for sorting data</span></div>
+<div class="line"><span class="keywordtype">int</span>  num_items;          <span class="comment">// e.g., 7</span></div>
+<div class="line"><span class="keywordtype">int</span>  num_segments;       <span class="comment">// e.g., 3</span></div>
+<div class="line"><span class="keywordtype">int</span>  *d_offsets;         <span class="comment">// e.g., [0, 3, 3, 7]</span></div>
+<div class="line"><span class="keywordtype">int</span>  *d_keys_in;         <span class="comment">// e.g., [8, 6, 7, 5, 3, 0, 9]</span></div>
+<div class="line"><span class="keywordtype">int</span>  *d_keys_out;        <span class="comment">// e.g., [-, -, -, -, -, -, -]</span></div>
+<div class="line"><span class="keywordtype">int</span>  *d_values_in;       <span class="comment">// e.g., [0, 1, 2, 3, 4, 5, 6]</span></div>
+<div class="line"><span class="keywordtype">int</span>  *d_values_out;      <span class="comment">// e.g., [-, -, -, -, -, -, -]</span></div>
+<div class="line">...</div>
+<div class="line"></div>
+<div class="line"><span class="comment">// Determine temporary device storage requirements</span></div>
+<div class="line">void     *d_temp_storage = NULL;</div>
+<div class="line"><span class="keywordtype">size_t</span>   temp_storage_bytes = 0;</div>
+<div class="line">cub::DeviceSegmentedSort::SortPairs(</div>
+<div class="line">    d_temp_storage, temp_storage_bytes,</div>
+<div class="line">    d_keys_in, d_keys_out, d_values_in, d_values_out,</div>
+<div class="line">    num_items, num_segments, d_offsets, d_offsets + 1);</div>
+<div class="line"></div>
+<div class="line"><span class="comment">// Allocate temporary storage</span></div>
+<div class="line">cudaMalloc(&amp;d_temp_storage, temp_storage_bytes);</div>
+<div class="line"></div>
+<div class="line"><span class="comment">// Run sorting operation</span></div>
+<div class="line">cub::DeviceSegmentedSort::SortPairs(</div>
+<div class="line">    d_temp_storage, temp_storage_bytes,</div>
+<div class="line">    d_keys_in, d_keys_out, d_values_in, d_values_out,</div>
+<div class="line">    num_items, num_segments, d_offsets, d_offsets + 1);</div>
+<div class="line"></div>
+<div class="line"><span class="comment">// d_keys_out            &lt;-- [6, 7, 8, 0, 3, 5, 9]</span></div>
+<div class="line"><span class="comment">// d_values_out          &lt;-- [1, 2, 0, 5, 4, 3, 6]</span></div>
+</div><!-- fragment --> </dd></dl>
+</div><h2 class="groupheader">Member Function Documentation</h2>
 <a class="anchor" id="ac7ab52dfd53e08d33c91ea4ae98b51a7"></a>
 <div class="memitem">
 <div class="memproto">
@@ -2668,7 +2711,7 @@ template&lt;typename KeyT , typename ValueT , typename BeginOffsetIteratorT , ty
 <li><a class="el" href="device__segmented__sort_8cuh.html">device_segmented_sort.cuh</a></li>
 </ul>
 </div><!-- contents -->
-<!-- HTML footer for doxygen 1.8.3.1-->
+<!-- HTML footer for doxygen 1.8.4-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
 Generated by &#160;<a href="http://www.doxygen.org/index.html">

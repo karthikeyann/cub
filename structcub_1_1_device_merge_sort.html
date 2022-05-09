@@ -1,4 +1,4 @@
-<!-- HTML header for doxygen 1.8.3.1-->
+<!-- HTML header for doxygen 1.8.4-->
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -193,7 +193,59 @@ cudaError_t&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el
 <tr class="memdesc:a86a9fe1a4da295fc69b70619e781e416"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sorts items using a merge sorting method.  <a href="#a86a9fe1a4da295fc69b70619e781e416">More...</a><br/></td></tr>
 <tr class="separator:a86a9fe1a4da295fc69b70619e781e416"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Member Function Documentation</h2>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p><a class="el" href="structcub_1_1_device_merge_sort.html" title="DeviceMergeSort provides device-wide, parallel operations for computing a merge sort across a sequenc...">DeviceMergeSort</a> provides device-wide, parallel operations for computing a merge sort across a sequence of data items residing within device-accessible memory. </p>
+<dl class="section user"><dt>Overview</dt><dd><ul>
+<li><a class="el" href="structcub_1_1_device_merge_sort.html" title="DeviceMergeSort provides device-wide, parallel operations for computing a merge sort across a sequenc...">DeviceMergeSort</a> arranges items into ascending order using a comparison functor with less-than semantics. Merge sort can handle arbitrary types (as long as a value of these types is a model of [LessThan Comparable]) and comparison functors, but is slower than <a class="el" href="structcub_1_1_device_radix_sort.html" title="DeviceRadixSort provides device-wide, parallel operations for computing a radix sort across a sequenc...">DeviceRadixSort</a> when sorting arithmetic types into ascending/descending order.</li>
+<li>Another difference from RadixSort is the fact that <a class="el" href="structcub_1_1_device_merge_sort.html" title="DeviceMergeSort provides device-wide, parallel operations for computing a merge sort across a sequenc...">DeviceMergeSort</a> can handle arbitrary random-access iterators, as shown below.</li>
+</ul>
+</dd></dl>
+<dl class="section user"><dt>A Simple Example</dt><dd></dd></dl>
+<dl class="section user"><dt></dt><dd>The code snippet below illustrates a thrust reverse iterator usage. </dd></dl>
+<dl class="section user"><dt></dt><dd><div class="fragment"><div class="line"><span class="preprocessor">#include &lt;<a class="code" href="cub_8cuh.html">cub/cub.cuh</a>&gt;</span>  <span class="comment">// or equivalently &lt;cub/device/device_merge_sort.cuh&gt;</span></div>
+<div class="line"></div>
+<div class="line"><span class="keyword">struct </span>CustomLess</div>
+<div class="line">{</div>
+<div class="line">  <span class="keyword">template</span> &lt;<span class="keyword">typename</span> DataType&gt;</div>
+<div class="line">  __device__ <span class="keywordtype">bool</span> operator()(<span class="keyword">const</span> DataType &amp;lhs, <span class="keyword">const</span> DataType &amp;rhs)</div>
+<div class="line">  {</div>
+<div class="line">    <span class="keywordflow">return</span> lhs &lt; rhs;</div>
+<div class="line">  }</div>
+<div class="line">};</div>
+<div class="line"></div>
+<div class="line"><span class="comment">// Declare, allocate, and initialize device-accessible pointers</span></div>
+<div class="line"><span class="comment">// for sorting data</span></div>
+<div class="line">thrust::device_vector&lt;KeyType&gt; d_keys(num_items);</div>
+<div class="line">thrust::device_vector&lt;DataType&gt; d_values(num_items);</div>
+<div class="line"><span class="comment">// ...</span></div>
+<div class="line"></div>
+<div class="line"><span class="comment">// Initialize iterator</span></div>
+<div class="line"><span class="keyword">using</span> KeyIterator = <span class="keyword">typename</span> thrust::device_vector&lt;KeyType&gt;::iterator;</div>
+<div class="line">thrust::reverse_iterator&lt;KeyIterator&gt; reverse_iter(d_keys.end());</div>
+<div class="line"></div>
+<div class="line"><span class="comment">// Determine temporary device storage requirements</span></div>
+<div class="line">std::size_t temp_storage_bytes = 0;</div>
+<div class="line"><a class="code" href="structcub_1_1_device_merge_sort.html#a8b77b4c6377f8a95b8c6e8299f6823b2" title="Sorts items using a merge sorting method. ">cub::DeviceMergeSort::SortPairs</a>(</div>
+<div class="line">  <span class="keyword">nullptr</span>,</div>
+<div class="line">  temp_storage_bytes,</div>
+<div class="line">  reverse_iter,</div>
+<div class="line">  thrust::raw_pointer_cast(d_values.data()),</div>
+<div class="line">  num_items,</div>
+<div class="line">  CustomLess());</div>
+<div class="line"></div>
+<div class="line"><span class="comment">// Allocate temporary storage</span></div>
+<div class="line">cudaMalloc(&amp;d_temp_storage, temp_storage_bytes);</div>
+<div class="line"></div>
+<div class="line"><span class="comment">// Run sorting operation</span></div>
+<div class="line"><a class="code" href="structcub_1_1_device_merge_sort.html#a8b77b4c6377f8a95b8c6e8299f6823b2" title="Sorts items using a merge sorting method. ">cub::DeviceMergeSort::SortPairs</a>(</div>
+<div class="line">  d_temp_storage,</div>
+<div class="line">  temp_storage_bytes,</div>
+<div class="line">  reverse_iter,</div>
+<div class="line">  thrust::raw_pointer_cast(d_values.data()),</div>
+<div class="line">  num_items,</div>
+<div class="line">  CustomLess());</div>
+</div><!-- fragment --> </dd></dl>
+</div><h2 class="groupheader">Member Function Documentation</h2>
 <a class="anchor" id="a8b77b4c6377f8a95b8c6e8299f6823b2"></a>
 <div class="memitem">
 <div class="memproto">
@@ -976,7 +1028,7 @@ template&lt;typename KeyIteratorT , typename OffsetT , typename CompareOpT &gt; 
 <li><a class="el" href="device__merge__sort_8cuh.html">device_merge_sort.cuh</a></li>
 </ul>
 </div><!-- contents -->
-<!-- HTML footer for doxygen 1.8.3.1-->
+<!-- HTML footer for doxygen 1.8.4-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
 Generated by &#160;<a href="http://www.doxygen.org/index.html">

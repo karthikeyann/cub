@@ -1,4 +1,4 @@
-<!-- HTML header for doxygen 1.8.3.1-->
+<!-- HTML header for doxygen 1.8.4-->
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -216,7 +216,66 @@ unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hr
 <tr class="memdesc:ae84c08b728c79e690a90ff6e83f249fc inherit pub_methods_class_block_merge_sort_strategy"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sorts items partitioned across a CUDA thread block using a merge sorting method.  <a href="#ae84c08b728c79e690a90ff6e83f249fc">More...</a><br/></td></tr>
 <tr class="separator:ae84c08b728c79e690a90ff6e83f249fc inherit pub_methods_class_block_merge_sort_strategy"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;
+    typename KeyT, 
+    int ITEMS_PER_THREAD, 
+    int LOGICAL_WARP_THREADS = CUB_PTX_WARP_THREADS, 
+    typename ValueT = NullType, 
+    int PTX_ARCH = CUB_PTX_ARCH&gt;<br/>
+class WarpMergeSort&lt; KeyT, ITEMS_PER_THREAD, LOGICAL_WARP_THREADS, ValueT, PTX_ARCH &gt;</h3>
+
+<p>The <a class="el" href="class_warp_merge_sort.html" title="The WarpMergeSort class provides methods for sorting items partitioned across a CUDA warp using a mer...">WarpMergeSort</a> class provides methods for sorting items partitioned across a CUDA warp using a merge sorting method. </p>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">KeyT</td><td>Key type</td></tr>
+    <tr><td class="paramname">ITEMS_PER_THREAD</td><td>The number of items per thread</td></tr>
+    <tr><td class="paramname">LOGICAL_WARP_THREADS</td><td><b>[optional]</b> The number of threads per "logical" warp (may be less than the number of hardware warp threads). Default is the warp size of the targeted CUDA compute-capability (e.g., 32 threads for SM86). Must be a power of two.</td></tr>
+    <tr><td class="paramname">ValueT</td><td><b>[optional]</b> Value type (default: cub::NullType, which indicates a keys-only sort)</td></tr>
+    <tr><td class="paramname">PTX_ARCH</td><td><b>[optional]</b> The PTX compute capability for which to to specialize this collective, formatted as per the <code><b>CUDA_ARCH</b></code> macro (e.g., 350 for sm_35). Useful for determining the collective's storage requirements for a given device from the host. (Default: the value of <code><b>CUDA_ARCH</b></code> during the current compiler pass)</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section user"><dt>Overview</dt><dd><a class="el" href="class_warp_merge_sort.html" title="The WarpMergeSort class provides methods for sorting items partitioned across a CUDA warp using a mer...">WarpMergeSort</a> arranges items into ascending order using a comparison functor with less-than semantics. Merge sort can handle arbitrary types and comparison functors.</dd></dl>
+<dl class="section user"><dt>A Simple Example</dt><dd></dd></dl>
+<dl class="section user"><dt></dt><dd>The code snippet below illustrates a sort of 64 integer keys that are partitioned across 16 threads where each thread owns 4 consecutive items. </dd></dl>
+<dl class="section user"><dt></dt><dd><div class="fragment"><div class="line"><span class="preprocessor">#include &lt;<a class="code" href="cub_8cuh.html">cub/cub.cuh</a>&gt;</span>  <span class="comment">// or equivalently &lt;cub/warp/warp_merge_sort.cuh&gt;</span></div>
+<div class="line"></div>
+<div class="line"><span class="keyword">struct </span>CustomLess</div>
+<div class="line">{</div>
+<div class="line">  <span class="keyword">template</span> &lt;<span class="keyword">typename</span> DataType&gt;</div>
+<div class="line">  __device__ <span class="keywordtype">bool</span> operator()(<span class="keyword">const</span> DataType &amp;lhs, <span class="keyword">const</span> DataType &amp;rhs)</div>
+<div class="line">  {</div>
+<div class="line">    <span class="keywordflow">return</span> lhs &lt; rhs;</div>
+<div class="line">  }</div>
+<div class="line">};</div>
+<div class="line"></div>
+<div class="line">__global__ <span class="keywordtype">void</span> ExampleKernel(...)</div>
+<div class="line">{</div>
+<div class="line">    constexpr <span class="keywordtype">int</span> warp_threads = 16;</div>
+<div class="line">    constexpr <span class="keywordtype">int</span> block_threads = 256;</div>
+<div class="line">    constexpr <span class="keywordtype">int</span> items_per_thread = 4;</div>
+<div class="line">    constexpr <span class="keywordtype">int</span> warps_per_block = block_threads / warp_threads;</div>
+<div class="line">    <span class="keyword">const</span> <span class="keywordtype">int</span> warp_id = <span class="keyword">static_cast&lt;</span><span class="keywordtype">int</span><span class="keyword">&gt;</span>(threadIdx.x) / warp_threads;</div>
+<div class="line"></div>
+<div class="line">    <span class="comment">// Specialize WarpMergeSort for a virtual warp of 16 threads</span></div>
+<div class="line">    <span class="comment">// owning 4 integer items each</span></div>
+<div class="line">    <span class="keyword">using</span> WarpMergeSortT =</div>
+<div class="line">      cub::WarpMergeSort&lt;int, items_per_thread, warp_threads&gt;;</div>
+<div class="line"></div>
+<div class="line">    <span class="comment">// Allocate shared memory for WarpMergeSort</span></div>
+<div class="line">    __shared__ <span class="keyword">typename</span> WarpMergeSort::TempStorage temp_storage[warps_per_block];</div>
+<div class="line"></div>
+<div class="line">    <span class="comment">// Obtain a segment of consecutive items that are blocked across threads</span></div>
+<div class="line">    <span class="keywordtype">int</span> thread_keys[items_per_thread];</div>
+<div class="line">    <span class="comment">// ...</span></div>
+<div class="line"></div>
+<div class="line">    <a class="code" href="class_warp_merge_sort.html#aacaf1a7099be7f093a986366db03fcaa">WarpMergeSort</a>(temp_storage[warp_id]).Sort(thread_keys, CustomLess());</div>
+<div class="line">    <span class="comment">// ...</span></div>
+<div class="line">}</div>
+</div><!-- fragment --> </dd></dl>
+<dl class="section user"><dt></dt><dd>Suppose the set of input <code>thread_keys</code> across the block of threads is <code>{ [0,511,1,510], [2,509,3,508], [4,507,5,506], ..., [254,257,255,256] }</code>. The corresponding output <code>thread_keys</code> in those threads will be <code>{ [0,1,2,3], [4,5,6,7], [8,9,10,11], ..., [508,509,510,511] }</code>. </dd></dl>
+</div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a class="anchor" id="aacaf1a7099be7f093a986366db03fcaa"></a>
 <div class="memitem">
 <div class="memproto">
@@ -298,7 +357,7 @@ template&lt;typename KeyT , int ITEMS_PER_THREAD, int LOGICAL_WARP_THREADS = CUB
 <li><a class="el" href="warp__merge__sort_8cuh.html">warp_merge_sort.cuh</a></li>
 </ul>
 </div><!-- contents -->
-<!-- HTML footer for doxygen 1.8.3.1-->
+<!-- HTML footer for doxygen 1.8.4-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
 Generated by &#160;<a href="http://www.doxygen.org/index.html">

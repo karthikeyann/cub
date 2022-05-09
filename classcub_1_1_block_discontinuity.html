@@ -1,4 +1,4 @@
-<!-- HTML header for doxygen 1.8.3.1-->
+<!-- HTML header for doxygen 1.8.4-->
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -219,7 +219,67 @@ Public Methods</h2></td></tr>
 <tr class="memdesc:ae0b251839d139e6773eb2745029654c6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets both head and tail flags indicating discontinuities between items partitioned across the thread block.  <a href="#ae0b251839d139e6773eb2745029654c6">More...</a><br/></td></tr>
 <tr class="separator:ae0b251839d139e6773eb2745029654c6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;
+    typename T, 
+    int BLOCK_DIM_X, 
+    int BLOCK_DIM_Y = 1, 
+    int BLOCK_DIM_Z = 1, 
+    int PTX_ARCH = CUB_PTX_ARCH&gt;<br/>
+class cub::BlockDiscontinuity&lt; T, BLOCK_DIM_X, BLOCK_DIM_Y, BLOCK_DIM_Z, PTX_ARCH &gt;</h3>
+
+<p>The <a class="el" href="classcub_1_1_block_discontinuity.html" title="The BlockDiscontinuity class provides collective methods for flagging discontinuities within an order...">BlockDiscontinuity</a> class provides <a href="index.html#sec0"><em>collective</em></a> methods for flagging discontinuities within an ordered set of items partitioned across a CUDA thread block. </p>
+<div class="image">
+<img src="discont_logo.png" alt="discont_logo.png"/>
+<div class="caption">
+.</div></div>
+ <dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">T</td><td>The data type to be flagged. </td></tr>
+    <tr><td class="paramname">BLOCK_DIM_X</td><td>The thread block length in threads along the X dimension </td></tr>
+    <tr><td class="paramname">BLOCK_DIM_Y</td><td><b>[optional]</b> The thread block length in threads along the Y dimension (default: 1) </td></tr>
+    <tr><td class="paramname">BLOCK_DIM_Z</td><td><b>[optional]</b> The thread block length in threads along the Z dimension (default: 1) </td></tr>
+    <tr><td class="paramname">PTX_ARCH</td><td><b>[optional]</b> The PTX compute capability for which to to specialize this collective, formatted as per the <code><b>CUDA_ARCH</b></code> macro (e.g., 350 for sm_35). Useful for determining the collective's storage requirements for a given device from the host. (Default: the value of <code><b>CUDA_ARCH</b></code> during the current compiler pass)</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section user"><dt>Overview</dt><dd><ul>
+<li>A set of "head flags" (or "tail flags") is often used to indicate corresponding items that differ from their predecessors (or successors). For example, head flags are convenient for demarcating disjoint data segments as part of a segmented scan or reduction.</li>
+<li>Assumes a <a href="index.html#sec4sec3"><em>blocked arrangement</em></a> of (<em>block-threads</em>*<em>items-per-thread</em>) items across the thread block, where thread<sub><em>i</em></sub> owns the <em>i</em><sup>th</sup> range of <em>items-per-thread</em> contiguous items. For multi-dimensional thread blocks, a row-major thread ordering is assumed.</li>
+</ul>
+</dd></dl>
+<dl class="section user"><dt>Performance Considerations</dt><dd><ul>
+<li>Efficiency is increased with increased granularity <code>ITEMS_PER_THREAD</code>. Performance is also typically increased until the additional register pressure or shared memory allocation size causes SM occupancy to fall too low. Consider variants of <a class="el" href="classcub_1_1_block_load.html" title="The BlockLoad class provides collective data movement methods for loading a linear segment of items f...">cub::BlockLoad</a> for efficiently gathering a <a href="index.html#sec4sec3"><em>blocked arrangement</em></a> of elements across threads.</li>
+</ul>
+</dd></dl>
+<dl class="section user"><dt>A Simple Example</dt><dd>Every thread in the block uses the <a class="el" href="classcub_1_1_block_discontinuity.html" title="The BlockDiscontinuity class provides collective methods for flagging discontinuities within an order...">BlockDiscontinuity</a> class by first specializing the <a class="el" href="classcub_1_1_block_discontinuity.html" title="The BlockDiscontinuity class provides collective methods for flagging discontinuities within an order...">BlockDiscontinuity</a> type, then instantiating an instance with parameters for communication, and finally invoking one or more collective member functions. </dd></dl>
+<dl class="section user"><dt></dt><dd>The code snippet below illustrates the head flagging of 512 integer items that are partitioned in a <a href="index.html#sec5sec3"><em>blocked arrangement</em></a> across 128 threads where each thread owns 4 consecutive items. </dd></dl>
+<dl class="section user"><dt></dt><dd><div class="fragment"><div class="line"><span class="preprocessor">#include &lt;<a class="code" href="cub_8cuh.html">cub/cub.cuh</a>&gt;</span>   <span class="comment">// or equivalently &lt;cub/block/block_discontinuity.cuh&gt;</span></div>
+<div class="line"></div>
+<div class="line">__global__ <span class="keywordtype">void</span> ExampleKernel(...)</div>
+<div class="line">{</div>
+<div class="line">    <span class="comment">// Specialize BlockDiscontinuity for a 1D block of 128 threads of type int</span></div>
+<div class="line">    <span class="keyword">typedef</span> <a class="code" href="classcub_1_1_block_discontinuity.html" title="The BlockDiscontinuity class provides collective methods for flagging discontinuities within an order...">cub::BlockDiscontinuity&lt;int, 128&gt;</a> <a class="code" href="classcub_1_1_block_discontinuity.html#ac713e6aa90ae9da93725434533fef3a0" title="Collective constructor using a private static allocation of shared memory as temporary storage...">BlockDiscontinuity</a>;</div>
+<div class="line"></div>
+<div class="line">    <span class="comment">// Allocate shared memory for BlockDiscontinuity</span></div>
+<div class="line">    __shared__ <span class="keyword">typename</span> BlockDiscontinuity::TempStorage temp_storage;</div>
+<div class="line"></div>
+<div class="line">    <span class="comment">// Obtain a segment of consecutive items that are blocked across threads</span></div>
+<div class="line">    <span class="keywordtype">int</span> thread_data[4];</div>
+<div class="line">    ...</div>
+<div class="line"></div>
+<div class="line">    <span class="comment">// Collectively compute head flags for discontinuities in the segment</span></div>
+<div class="line">    <span class="keywordtype">int</span> head_flags[4];</div>
+<div class="line">    <a class="code" href="classcub_1_1_block_discontinuity.html#ac713e6aa90ae9da93725434533fef3a0" title="Collective constructor using a private static allocation of shared memory as temporary storage...">BlockDiscontinuity</a>(temp_storage).FlagHeads(head_flags, thread_data, <a class="code" href="structcub_1_1_inequality.html" title="Default inequality functor. ">cub::Inequality</a>());</div>
+</div><!-- fragment --> </dd></dl>
+<dl class="section user"><dt></dt><dd>Suppose the set of input <code>thread_data</code> across the block of threads is <code>{ [0,0,1,1], [1,1,1,1], [2,3,3,3], [3,4,4,4], ... }</code>. The corresponding output <code>head_flags</code> in those threads will be <code>{ [1,0,1,0], [0,0,0,0], [1,1,0,0], [0,1,0,0], ... }</code>.</dd></dl>
+<dl class="section user"><dt>Performance Considerations</dt><dd><ul>
+<li>Incurs zero bank conflicts for most types</li>
+</ul>
+</dd></dl>
+<dl class="section user"><dt>Re-using dynamically allocating shared memory</dt><dd>The following example under the examples/block folder illustrates usage of dynamically shared memory with <a class="el" href="classcub_1_1_block_reduce.html" title="The BlockReduce class provides collective methods for computing a parallel reduction of items partiti...">BlockReduce</a> and how to re-purpose the same memory region: <a href="../../examples/block/example_block_reduce_dyn_smem.cu">example_block_reduce_dyn_smem.cu</a></dd></dl>
+<p>This example can be easily adapted to the storage required by <a class="el" href="classcub_1_1_block_discontinuity.html" title="The BlockDiscontinuity class provides collective methods for flagging discontinuities within an order...">BlockDiscontinuity</a>. </p>
+</div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a class="anchor" id="ac713e6aa90ae9da93725434533fef3a0"></a>
 <div class="memitem">
 <div class="memproto">
@@ -1124,7 +1184,7 @@ template&lt;int ITEMS_PER_THREAD, typename FlagT , typename FlagOp &gt; </div>
 <li><a class="el" href="block__discontinuity_8cuh.html">block_discontinuity.cuh</a></li>
 </ul>
 </div><!-- contents -->
-<!-- HTML footer for doxygen 1.8.3.1-->
+<!-- HTML footer for doxygen 1.8.4-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
 Generated by &#160;<a href="http://www.doxygen.org/index.html">

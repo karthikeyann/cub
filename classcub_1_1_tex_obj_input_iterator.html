@@ -1,4 +1,4 @@
-<!-- HTML header for doxygen 1.8.3.1-->
+<!-- HTML header for doxygen 1.8.4-->
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -247,7 +247,49 @@ Friends</h2></td></tr>
 <tr class="memdesc:a11b2073215294343bdc32f09c0bc5e80"><td class="mdescLeft">&#160;</td><td class="mdescRight">ostream operator  <a href="#a11b2073215294343bdc32f09c0bc5e80">More...</a><br/></td></tr>
 <tr class="separator:a11b2073215294343bdc32f09c0bc5e80"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Member Typedef Documentation</h2>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;
+    typename T, 
+    typename OffsetT = ptrdiff_t&gt;<br/>
+class cub::TexObjInputIterator&lt; T, OffsetT &gt;</h3>
+
+<p>A random-access input wrapper for dereferencing array values through texture cache. Uses newer Kepler-style texture objects. </p>
+<dl class="section user"><dt>Overview</dt><dd><ul>
+<li><a class="el" href="classcub_1_1_tex_obj_input_iterator.html" title="A random-access input wrapper for dereferencing array values through texture cache. Uses newer Kepler-style texture objects. ">TexObjInputIterator</a> wraps a native device pointer of type <code>ValueType*</code>. References to elements are to be loaded through texture cache.</li>
+<li>Can be used to load any data type from memory through texture cache.</li>
+<li>Can be manipulated and exchanged within and between host and device functions, can only be constructed within host functions, and can only be dereferenced within device functions.</li>
+<li>With regard to nested/dynamic parallelism, <a class="el" href="classcub_1_1_tex_obj_input_iterator.html" title="A random-access input wrapper for dereferencing array values through texture cache. Uses newer Kepler-style texture objects. ">TexObjInputIterator</a> iterators may only be created by the host thread, but can be used by any descendant kernel.</li>
+<li>Compatible with Thrust API v1.7 or newer.</li>
+</ul>
+</dd></dl>
+<dl class="section user"><dt>Snippet</dt><dd>The code snippet below illustrates the use of <code><a class="el" href="classcub_1_1_tex_obj_input_iterator.html" title="A random-access input wrapper for dereferencing array values through texture cache. Uses newer Kepler-style texture objects. ">TexObjInputIterator</a></code> to dereference a device array of doubles through texture cache. </dd></dl>
+<dl class="section user"><dt></dt><dd><div class="fragment"><div class="line"><span class="preprocessor">#include &lt;<a class="code" href="cub_8cuh.html">cub/cub.cuh</a>&gt;</span>   <span class="comment">// or equivalently &lt;cub/iterator/tex_obj_input_iterator.cuh&gt;</span></div>
+<div class="line"></div>
+<div class="line"><span class="comment">// Declare, allocate, and initialize a device array</span></div>
+<div class="line"><span class="keywordtype">int</span> num_items;   <span class="comment">// e.g., 7</span></div>
+<div class="line"><span class="keywordtype">double</span> *d_in;    <span class="comment">// e.g., [8.0, 6.0, 7.0, 5.0, 3.0, 0.0, 9.0]</span></div>
+<div class="line"></div>
+<div class="line"><span class="comment">// Create an iterator wrapper</span></div>
+<div class="line"><a class="code" href="classcub_1_1_tex_obj_input_iterator.html" title="A random-access input wrapper for dereferencing array values through texture cache. Uses newer Kepler-style texture objects. ">cub::TexObjInputIterator&lt;double&gt;</a> itr;</div>
+<div class="line">itr.<a class="code" href="classcub_1_1_tex_obj_input_iterator.html#adf05337e92bbe57058cc3ccb622c51fe" title="Use this iterator to bind ptr with a texture reference. ">BindTexture</a>(d_in, <span class="keyword">sizeof</span>(<span class="keywordtype">double</span>) * num_items);</div>
+<div class="line">...</div>
+<div class="line"></div>
+<div class="line"><span class="comment">// Within device code:</span></div>
+<div class="line">printf(<span class="stringliteral">&quot;%f\n&quot;</span>, itr[0]);      <span class="comment">// 8.0</span></div>
+<div class="line">printf(<span class="stringliteral">&quot;%f\n&quot;</span>, itr[1]);      <span class="comment">// 6.0</span></div>
+<div class="line">printf(<span class="stringliteral">&quot;%f\n&quot;</span>, itr[6]);      <span class="comment">// 9.0</span></div>
+<div class="line"></div>
+<div class="line">...</div>
+<div class="line">itr.UnbindTexture();</div>
+</div><!-- fragment --></dd></dl>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">T</td><td>The value type of this iterator </td></tr>
+    <tr><td class="paramname">OffsetT</td><td>The difference type of this iterator (Default: <code>ptrdiff_t</code>) </td></tr>
+  </table>
+  </dd>
+</dl>
+</div><h2 class="groupheader">Member Typedef Documentation</h2>
 <a class="anchor" id="aa7e85f2b2f4d580e3ded497028604a5c"></a>
 <div class="memitem">
 <div class="memproto">
@@ -840,7 +882,7 @@ template&lt;typename T, typename OffsetT = ptrdiff_t&gt; </div>
 <li><a class="el" href="tex__obj__input__iterator_8cuh.html">tex_obj_input_iterator.cuh</a></li>
 </ul>
 </div><!-- contents -->
-<!-- HTML footer for doxygen 1.8.3.1-->
+<!-- HTML footer for doxygen 1.8.4-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
 Generated by &#160;<a href="http://www.doxygen.org/index.html">
